@@ -17,10 +17,13 @@ export default function ReviewStep({
   prevStep,
 }: Props) {
 
-  const { getValues, reset } =
+  // FIX 1: Use watch() instead of getValues() at render time so the
+  // review screen always reflects the latest field values, even if the
+  // user navigated back and edited something.
+  const { watch, trigger, reset } =
     useFormContext<LoanFormData>();
 
-  const values = getValues();
+  const values = watch();
 
   const [loading, setLoading] =
     useState(false);
@@ -29,6 +32,14 @@ export default function ReviewStep({
     useState(false);
 
   const handleSubmit = async () => {
+
+    // FIX 2: Run full validation before submitting so no incomplete
+    // data can be sent even if the user somehow reaches this step early.
+    const valid = await trigger();
+    if (!valid) {
+      alert("Please go back and fill in all required fields.");
+      return;
+    }
 
     try {
 
@@ -44,6 +55,8 @@ export default function ReviewStep({
               "application/json",
           },
 
+          // FIX 3: Use the live watched values (already captured above),
+          // not a stale snapshot from render time.
           body: JSON.stringify(values),
         }
       );
@@ -60,7 +73,7 @@ export default function ReviewStep({
       } else {
 
         alert(
-          "Something went wrong."
+          "Something went wrong. Please try again."
         );
       }
 
@@ -68,7 +81,7 @@ export default function ReviewStep({
 
       console.error(error);
 
-      alert("Submission failed.");
+      alert("Submission failed. Please check your connection and try again.");
 
     } finally {
 
@@ -107,6 +120,7 @@ export default function ReviewStep({
 
           {/* APPLY AGAIN */}
           <button
+            type="button"
             onClick={() => {
               window.location.reload();
             }}
@@ -133,10 +147,10 @@ export default function ReviewStep({
           </h3>
 
           <div className="mt-4 space-y-3 text-gray-600">
-            <p>{values.fullName}</p>
-            <p>{values.email}</p>
-            <p>{values.phone}</p>
-            <p>{values.dob}</p>
+            <p><span className="text-gray-400 text-sm">Name:</span> {values.fullName}</p>
+            <p><span className="text-gray-400 text-sm">Email:</span> {values.email}</p>
+            <p><span className="text-gray-400 text-sm">Phone:</span> {values.phone}</p>
+            <p><span className="text-gray-400 text-sm">Date of Birth:</span> {values.dob}</p>
           </div>
         </div>
 
@@ -147,10 +161,12 @@ export default function ReviewStep({
           </h3>
 
           <div className="mt-4 space-y-3 text-gray-600">
-            <p>{values.employmentType}</p>
-            <p>{values.income}</p>
-            <p>{values.creditScore}</p>
-            <p>{values.existingLoans}</p>
+            <p><span className="text-gray-400 text-sm">Employment:</span> {values.employmentType}</p>
+            <p><span className="text-gray-400 text-sm">Income:</span> {values.income}</p>
+            <p><span className="text-gray-400 text-sm">Credit Score:</span> {values.creditScore}</p>
+            {values.existingLoans && (
+              <p><span className="text-gray-400 text-sm">Existing Loans:</span> {values.existingLoans}</p>
+            )}
           </div>
         </div>
 
@@ -161,11 +177,13 @@ export default function ReviewStep({
           </h3>
 
           <div className="mt-4 space-y-3 text-gray-600">
-            <p>{values.loanType}</p>
-            <p>{values.loanAmount}</p>
-            <p>{values.repaymentDuration}</p>
-            <p>{values.purpose}</p>
-            <p>{values.notes}</p>
+            <p><span className="text-gray-400 text-sm">Type:</span> {values.loanType}</p>
+            <p><span className="text-gray-400 text-sm">Amount:</span> {values.loanAmount}</p>
+            <p><span className="text-gray-400 text-sm">Duration:</span> {values.repaymentDuration} months</p>
+            <p><span className="text-gray-400 text-sm">Purpose:</span> {values.purpose}</p>
+            {values.notes && (
+              <p><span className="text-gray-400 text-sm">Notes:</span> {values.notes}</p>
+            )}
           </div>
         </div>
 
@@ -184,6 +202,7 @@ export default function ReviewStep({
         </Button>
 
         <Button
+          type="button"
           onClick={handleSubmit}
           disabled={loading}
           className="h-14 px-10 rounded-full"

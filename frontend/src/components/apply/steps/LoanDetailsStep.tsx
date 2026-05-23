@@ -31,9 +31,15 @@ export default function LoanDetailsStep({
   const {
     register,
     setValue,
+    watch,
     trigger,
     formState: { errors },
   } = useFormContext<LoanFormData>();
+
+  // FIX: Watch current values so Selects show correct value when
+  // the user navigates back to this step.
+  const loanType = watch("loanType");
+  const repaymentDuration = watch("repaymentDuration");
 
   const handleNext = async () => {
 
@@ -59,6 +65,7 @@ export default function LoanDetailsStep({
         </label>
 
         <Select
+          value={loanType}
           onValueChange={(value) =>
             setValue(
               "loanType",
@@ -135,6 +142,7 @@ export default function LoanDetailsStep({
         </label>
 
         <Select
+          value={repaymentDuration}
           onValueChange={(value) =>
             setValue(
               "repaymentDuration",

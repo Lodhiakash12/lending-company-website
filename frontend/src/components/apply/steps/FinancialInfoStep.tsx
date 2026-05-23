@@ -29,9 +29,15 @@ export default function FinancialInfoStep({
   const {
     register,
     setValue,
+    watch,
     trigger,
     formState: { errors },
   } = useFormContext<LoanFormData>();
+
+  // FIX: Watch current values so Select shows correct value when
+  // the user navigates back to this step.
+  const employmentType = watch("employmentType");
+  const creditScore = watch("creditScore");
 
   const handleNext = async () => {
 
@@ -56,6 +62,7 @@ export default function FinancialInfoStep({
         </label>
 
         <Select
+          value={employmentType}
           onValueChange={(value) =>
             setValue(
               "employmentType",
@@ -132,6 +139,7 @@ export default function FinancialInfoStep({
         </label>
 
         <Select
+          value={creditScore}
           onValueChange={(value) =>
             setValue(
               "creditScore",

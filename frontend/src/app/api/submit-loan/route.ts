@@ -5,7 +5,8 @@ export async function POST(req: Request) {
   try {
 
     const body = await req.json();
-    console.log(process.env.GOOGLE_PRIVATE_KEY);
+    // FIX: Removed console.log(process.env.GOOGLE_PRIVATE_KEY) — this
+    // leaked the private key to server logs.
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
